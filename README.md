@@ -29,7 +29,7 @@ Just upload your resume in pdf format, and see for yourself :)
 1. Clone the repository to your local machine
 2. Navigate to the project directory
 3. Install all the required libraries (just run pip install -r /path/to/requirements.txt)
-4. Provide your Open AI API key in the .yaml file
+4. Provide your Ollama Cloud API key (https://ollama.com/settings/keys) in `config.yaml` as `OLLAMA_API_KEY`, or set the `OLLAMA_API_KEY` environment variable
 5. Run the following command to start the chatbot -
 
     ```
@@ -39,5 +39,62 @@ Just upload your resume in pdf format, and see for yourself :)
     ```
     Go to: https://localhost:8000
     ```
+
+### API
+
+`POST /api/parse` — send the resume PDF as the multipart field `file`.
+
+```
+curl -F "file=@resume.pdf" https://<your-app>/api/parse
+```
+
+Success (`200`):
+
+```json
+{
+  "success": true,
+  "data": {
+    "full_name": "Maria Popescu",
+    "email": "maria.popescu@example.com",
+    "phone": "+40 721 123 456",
+    "location": "Cluj-Napoca, Romania",
+    "github": "https://github.com/mpopescu",
+    "linkedin": "https://linkedin.com/in/maria-popescu",
+    "employment": [
+      {
+        "company": "Endava",
+        "position": "Senior Backend Developer",
+        "location": "Cluj",
+        "start_date": "2022-03",
+        "end_date": null,
+        "is_current": true,
+        "description": "Built payment microservices in Python and FastAPI."
+      }
+    ],
+    "education": [
+      {
+        "institution": "Babes-Bolyai University",
+        "degree": "BSc",
+        "field_of_study": "Computer Science",
+        "start_date": "2015",
+        "end_date": "2019"
+      }
+    ],
+    "technical_skills": ["Python", "FastAPI", "PostgreSQL"],
+    "soft_skills": ["leadership", "communication"],
+    "languages": [{ "name": "English", "proficiency": "C1" }]
+  }
+}
+```
+
+Every field is always present. Missing values are `null` (or `[]` for lists). Dates are `YYYY-MM` or `YYYY`.
+
+Errors return `{"success": false, "error": "<message>"}` with status:
+
+| Status | Meaning |
+|--------|---------|
+| 400 | No `file` field, or the file is not a valid PDF |
+| 422 | The PDF has no extractable text (e.g. a scanned image) |
+| 502 | The AI service failed; retry later |
     
 Overall, the development of a resume parser app using Flask represents a significant advancement in leveraging technology to support job seekers in optimizing their resumes for the modern recruitment landscape. This app aligns with the increasing demand for efficient and technology-driven solutions in the job application process, ultimately benefiting both job seekers and recruiters.
