@@ -7,7 +7,8 @@ import yaml
 
 CONFIG_PATH = r"config.yaml"
 OLLAMA_HOST = "https://ollama.com"
-MODELS = ["gpt-oss:120b", "gpt-oss:20b", "gemma4:31b"]
+# Cheapest first - Ollama Cloud bills per token and larger models cost more
+MODELS = ["gpt-oss:20b", "nemotron-3-nano:30b", "gpt-oss:120b"]
 
 # On Vercel the key comes from an environment variable; locally from config.yaml
 api_key = os.environ.get('OLLAMA_API_KEY')
@@ -54,6 +55,8 @@ def ats_extractor(resume_data):
                         model=model,
                         messages=messages,
                         format="json",
+                        # Reasoning tokens are billed too - keep them minimal
+                        think="low" if model.startswith("gpt-oss") else False,
                         options={"temperature": 0.0})
             data = _extract_json(response.message.content)
             break
