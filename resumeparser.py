@@ -1,6 +1,7 @@
 # import libraries
 
 import os
+import json
 from ollama import Client, ResponseError
 import yaml
 
@@ -42,7 +43,8 @@ def ats_extractor(resume_data):
         "content": resume_data}
         ]
 
-    # Free tier models can be busy or rate limited - fall back to the next one
+    # Free tier models can be busy, rate limited or return empty/invalid JSON
+    # - fall back to the next one
     for model in MODELS:
         try:
             response = ollama_client.chat(
@@ -50,13 +52,21 @@ def ats_extractor(resume_data):
                         messages=messages,
                         format="json",
                         options={"temperature": 0.0})
+            data = _extract_json(response.message.content)
             break
-        except ResponseError as e:
+        except (ResponseError, ValueError) as e:
             last_error = e
     else:
         raise last_error
 
-    data = response.message.content
-
     #print(data)
+    return data
+
+def _extract_json(text):
+    # Models sometimes wrap the JSON in ```json fences - keep only the object
+    start, end = text.find('{'), text.rfind('}')
+    if start == -1 or end == -1:
+        raise ValueError("Model returned no JSON")
+    data = text[start:end + 1]
+    json.loads(data)
     return data
