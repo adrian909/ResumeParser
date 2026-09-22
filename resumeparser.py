@@ -19,6 +19,9 @@ if not api_key and os.path.exists(CONFIG_PATH):
 
 def ats_extractor(resume_data):
 
+    if not api_key:
+        raise RuntimeError("OLLAMA_API_KEY is not set. Add it in Vercel > Settings > Environment Variables and redeploy.")
+
     prompt = '''
     You are an AI bot designed to act as a professional for parsing resumes. You are given with resume and your job is to extract the following information from the resume:
     1. full name

@@ -17,10 +17,17 @@ def index():
 
 @app.route("/process", methods=["POST"])
 def ats():
-    doc = request.files['pdf_doc']
-    # Read the PDF in memory - Vercel's filesystem is read-only
-    data = _read_file_from_path(doc.stream)
-    data = ats_extractor(data)
+    doc = request.files.get('pdf_doc')
+    if not doc or not doc.filename:
+        return render_template('index.html', error = "Choose a PDF file first.")
+
+    try:
+        # Read the PDF in memory - Vercel's filesystem is read-only
+        data = _read_file_from_path(doc.stream)
+        data = ats_extractor(data)
+    except Exception as e:
+        app.logger.exception("Resume processing failed")
+        return render_template('index.html', error = str(e)), 500
 
     return render_template('index.html', data = json.loads(data))
 

@@ -80,6 +80,9 @@
             <div class="flex flex-col justify-center items-center text-white">
                 <div class=" ">
 
+          {% if error %}
+                     <div class="border border-red-400 bg-red-500/10 text-red-300 max-w-7xl p-8 mb-4"><strong>Error:</strong> {{ error }}</div>
+          {% endif %}
                      <div id="dictionaryValues" class="border border-1 border-white max-w-7xl p-8"></div>
           {%if data %}
         <script>
