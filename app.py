@@ -1,5 +1,5 @@
 # FLASK APP - Run the app using flask --app app.py run
-import os, sys
+import io, os, sys
 from flask import Flask, request, render_template, jsonify
 from pypdf import PdfReader
 from resumeparser import ats_extractor
@@ -56,13 +56,16 @@ def api_parse():
     if not doc or not doc.filename:
         return _api_error("Send the resume PDF as multipart/form-data field 'file'.", 400)
 
+    content = doc.read()
     try:
-        text = _read_file_from_path(doc.stream)
+        reader = PdfReader(io.BytesIO(content))
+        text = "".join(page.extract_text() or "" for page in reader.pages)
     except Exception:
-        return _api_error("The uploaded file is not a valid PDF.", 400)
+        return _api_error(f"The uploaded file is not a valid PDF (received {len(content)} bytes).", 400)
 
     if not text.strip():
-        return _api_error("No text found in the PDF (scanned image PDFs are not supported).", 422)
+        return _api_error(f"No text found in the PDF (received {len(content)} bytes, {len(reader.pages)} pages). "
+                          "Scanned image PDFs are not supported.", 422)
 
     try:
         data = ats_extractor(text)
