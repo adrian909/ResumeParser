@@ -72,6 +72,15 @@ def api_parse():
 
     return jsonify({"success": True, "data": data})
 
+@app.route("/api/parse", methods=["GET"])
+def api_parse_usage():
+    # Opening the URL in a browser sends GET - explain how to call it instead
+    return jsonify({
+        "success": False,
+        "error": "Use POST with the resume PDF as multipart/form-data field 'file'.",
+        "example": "curl -F \"file=@resume.pdf\" " + request.base_url
+    }), 405
+
 def _api_error(message, status):
     return jsonify({"success": False, "error": message}), status
 
