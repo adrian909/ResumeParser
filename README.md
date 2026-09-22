@@ -48,6 +48,20 @@ Just upload your resume in pdf format, and see for yourself :)
 curl -F "file=@resume.pdf" https://<your-app>/api/parse
 ```
 
+From the browser (CORS is enabled for `/api/*`):
+
+```js
+const form = new FormData();
+form.append("file", fileInput.files[0]);
+
+const res = await fetch("https://<your-app>/api/parse", { method: "POST", body: form });
+const json = await res.json();
+if (json.success) console.log(json.data);
+else console.error(json.error);
+```
+
+By default any website may call the API. To restrict it, set the `ALLOWED_ORIGINS` environment variable to a comma separated list, e.g. `https://mysite.com,http://localhost:3000`.
+
 Success (`200`):
 
 ```json

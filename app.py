@@ -10,6 +10,24 @@ sys.path.insert(0, os.path.abspath(os.getcwd()))
 app = Flask(__name__)
 app.json.sort_keys = False  # keep fields in schema order
 
+# CORS for browser calls to /api/* - comma separated list, "*" allows any site
+ALLOWED_ORIGINS = [o.strip() for o in os.environ.get('ALLOWED_ORIGINS', '*').split(',')]
+
+
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get('Origin')
+    if request.path.startswith('/api/') and origin:
+        if '*' in ALLOWED_ORIGINS:
+            response.headers['Access-Control-Allow-Origin'] = '*'
+        elif origin in ALLOWED_ORIGINS:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Vary'] = 'Origin'
+        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        response.headers['Access-Control-Max-Age'] = '86400'
+    return response
+
 
 @app.route('/')
 def index():
