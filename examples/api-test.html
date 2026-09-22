@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume Parser API test</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 16px; }
+        pre { background: #f4f4f4; padding: 16px; overflow-x: auto; }
+        .error { color: #c00; }
+    </style>
+</head>
+<body>
+    <h1>Resume Parser API test</h1>
+    <input type="file" id="file" accept=".pdf">
+    <button id="send">Parse</button>
+    <p id="status"></p>
+    <pre id="result"></pre>
+
+    <script>
+        const API_URL = "https://resume-parser-eight-psi.vercel.app/api/parse";
+
+        document.getElementById("send").addEventListener("click", async () => {
+            const file = document.getElementById("file").files[0];
+            const status = document.getElementById("status");
+            const result = document.getElementById("result");
+
+            if (!file) {
+                status.textContent = "Choose a PDF first.";
+                return;
+            }
+
+            const form = new FormData();
+            form.append("file", file);
+
+            status.textContent = "Parsing...";
+            status.className = "";
+            result.textContent = "";
+
+            try {
+                const res = await fetch(API_URL, { method: "POST", body: form });
+                const json = await res.json();
+                status.textContent = json.success ? "Done" : "Error: " + json.error;
+                status.className = json.success ? "" : "error";
+                result.textContent = JSON.stringify(json, null, 2);
+            } catch (e) {
+                status.textContent = "Request failed: " + e.message;
+                status.className = "error";
+            }
+        });
+    </script>
+</body>
+</html>
